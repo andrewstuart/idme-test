@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: idme
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: idme
+  template:
+    metadata:
+      labels:
+        app: idme
+    spec:
+      containers:
+      - name: idme
+        image: docker.astuart.co/andrew/idme
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: idme
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: idme
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: idme
+  namespace: default
+spec:
+  tls:
+  - secretName: idme.astuart.co.tls
+    hosts:
+    - idme.astuart.co
+  rules:
+  - host: idme.astuart.co
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: idme
+          servicePort: 80
+
